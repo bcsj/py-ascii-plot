@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import array, logical_and
 
 __all__ = ['contours']
 
@@ -18,31 +18,35 @@ def contours(x,y,z,nx,ny,levels=None):
     N = len(symbs) if levels is None else levels
     symbs = symbols if levels is None else symbols[0:ns:int(ns/N)]
 
-    zblk = (z.max()-z.min())/N
-    xblk = (x.max()-x.min())/nx
-    yblk = (y.max()-y.min())/ny
+    xmin = x.min()
+    ymin = y.min()
+    zmin = z.min()
 
-    Z = np.array([' ']*nx*ny)
+    zblk = (z.max()-zmin)/N
+    xblk = (x.max()-xmin)/nx
+    yblk = (y.max()-ymin)/ny
+
+    Z = array([' ']*nx*ny)
     for i in range(nx):
         for j in range(ny):
-            x0 = x.min() + i*xblk
-            y0 = y.min() + j*yblk
-            x1 = x.min() + (i+1)*xblk
-            y1 = y.min() + (j+1)*yblk
+            x0 = xmin + i*xblk
+            y0 = ymin + j*yblk
+            x1 = xmin + (i+1)*xblk
+            y1 = ymin + (j+1)*yblk
             
-            idxx = np.logical_and(x0 < x, x < x1)
-            idxy = np.logical_and(y0 < y, y < y1)
-            idx = np.logical_and(idxx,idxy)
+            idxx = logical_and(x0 < x, x < x1)
+            idxy = logical_and(y0 < y, y < y1)
+            idx = logical_and(idxx,idxy)
             if not idx.any():
                 Z[i+j*nx] = empty
             else:
                 Zval = z[idx].mean()
-                idxz = np.floor((Zval - z.min())/zblk).astype('int64')
+                idxz = ((Zval - zmin)/zblk).astype('int64')
                 Z[i+j*nx] = symbs[idxz]
     Z = ''.join(Z)
-    Z = [Z[i:i+nx] for i in range(0,len(Z),nx)]
+    Z = [Z[i:i+nx] for i in range(0,nx*ny,nx)]
     Z.reverse()
-    for i in range(len(Z)):
+    for i in range(ny):
         print(Z[i])
 
 
